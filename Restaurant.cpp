@@ -145,9 +145,9 @@ public:
 			return;
 		}
 		if (q.size == 1) {
-			head->next = nullptr;
-			head->prev = nullptr;
 			customer* tmp = head;
+			tmp->next = nullptr;
+			tmp->prev = nullptr;
 			delete tmp;
 			head = curr = nullptr;
 			while (!q.isEmpty()) {
@@ -220,23 +220,27 @@ public:
 		{
 			q.enqueue(name, energy);
 			customer *temp = new customer(name, energy, nullptr, nullptr);
-			temp->prev = head;
-			temp->next = head;
 			head = temp;
+			head->prev = head;
+			head->next = head;
 			curr = head;
 		}
 		else if (q.size > 0 && q.size < MAXSIZE / 2)
 		{
 			if (energy >= curr->energy)
 			{
-				customer *cus = new customer(name, energy, curr, curr->next);
+				customer *cus = new customer(name, energy, nullptr, nullptr);
+				cus->next = curr->next;
+				cus->prev = curr;
 				curr->next->prev = cus;
 				curr->next = cus;
 				curr = cus;
 			}
 			else
 			{
-				customer *cus = new customer(name, energy, curr, curr->prev);
+				customer *cus = new customer(name, energy, nullptr, nullptr);
+				cus->next = curr;
+				cus->prev = curr->prev;
 				curr->prev->next = cus;
 				curr->prev = cus;
 				curr = cus;
@@ -248,9 +252,9 @@ public:
 		{
 			int res = 0;
 			int signedRes = res;
-			customer *ptr = head->next;
+			customer *ptr = head;
 			customer *cusAdd;
-			while (ptr != head)
+			do
 			{
 				if (abs(ptr->energy - energy) > res)
 				{
@@ -259,7 +263,7 @@ public:
 					signedRes = energy - ptr->energy;
 				}
 				ptr = ptr->next;
-			}
+			} while (ptr != head);
 			if (signedRes < 0)
 			{
 				customer *tmp = cusAdd->prev;
@@ -295,8 +299,8 @@ public:
 			if (q.size == 1)
 			{
 				customer* tmp = head;
-				head->next = nullptr;
-				head->prev = nullptr;
+				tmp->next = nullptr;
+				tmp->prev = nullptr;
 				delete tmp;
 				head = nullptr;
 				curr = head;
