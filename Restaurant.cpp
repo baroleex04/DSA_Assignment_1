@@ -32,15 +32,18 @@ public:
 		}
 		~Stack()
 		{
-			while (top != nullptr) pop();
+			while (top != nullptr)
+				pop();
 		}
 		void push(cusNameEnergy it)
 		{
 			cusNameEnergy *newNode = new cusNameEnergy(it.name, it.energy);
-			if (isEmpty()) {
+			if (isEmpty())
+			{
 				top = newNode;
 			}
-			else {
+			else
+			{
 				newNode->next = top;
 				top->prev = newNode;
 				top = newNode;
@@ -52,9 +55,10 @@ public:
 			{
 				return;
 			}
-			cusNameEnergy* tmp = top;
+			cusNameEnergy *tmp = top;
 			top = top->next;
-			if (top != nullptr) top->prev = nullptr;
+			if (top != nullptr)
+				top->prev = nullptr;
 			tmp->next = nullptr;
 			tmp->prev = nullptr;
 			delete tmp;
@@ -83,7 +87,8 @@ public:
 
 		~Queue()
 		{
-			while (!isEmpty()) {
+			while (!isEmpty())
+			{
 				dequeue();
 			}
 			size = 0;
@@ -109,14 +114,17 @@ public:
 			{
 				cusNameEnergy *temp = front;
 				front = front->next;
-				if (front != nullptr) front->prev = nullptr;
+				if (front != nullptr)
+					front->prev = nullptr;
 				temp->next = nullptr;
 				temp->prev = nullptr;
 				delete temp;
-				if (front == nullptr) rear = nullptr;
+				if (front == nullptr)
+					rear = nullptr;
 				size--;
 			}
-			else return;
+			else
+				return;
 		}
 
 		cusNameEnergy *frontValue()
@@ -141,61 +149,57 @@ public:
 	};
 	~imp_res()
 	{
-		if (head == nullptr) {
+		if (head == nullptr)
+		{
 			return;
 		}
-		if (q.size == 1) {
-			customer* tmp = head;
+		if (q.size == 1)
+		{
+			customer *tmp = head;
 			tmp->next = nullptr;
 			tmp->prev = nullptr;
 			delete tmp;
 			head = curr = nullptr;
-			while (!q.isEmpty()) {
+			while (!q.isEmpty())
+			{
 				q.dequeue();
 			}
-			while (!wait.isEmpty()) {
+			while (!wait.isEmpty())
+			{
 				wait.dequeue();
 			}
 		}
-		else {
-			/*customer* ptr = head->next;
-			do {
-				customer* temp = ptr;
-				ptr = ptr->next;
-				temp->next->prev = temp->prev;
-				temp->prev->next = ptr;
-				temp->prev = nullptr;
-				temp->next = nullptr;
-				delete temp;
-				curr = ptr;
-			} while (ptr != head)
-			customer* tmp = head;
-			tmp->next = nullptr;
-			tmp->prev = nullptr;
-			delete tmp;
-			curr = head = nullptr;*/
-			while (!q.isEmpty()) {
-				customer * ptr = head;
+		else
+		{
+			while (!q.isEmpty())
+			{
+				customer *ptr = head;
 				head = head->next;
 				head->prev = ptr->prev;
-				if (ptr->prev != nullptr) ptr->prev->next = head;
+				if (ptr->prev != nullptr)
+					ptr->prev->next = head;
 				ptr->prev = nullptr;
 				ptr->next = nullptr;
 				delete ptr;
 				q.dequeue();
 			}
-			while (!wait.isEmpty()) {
+			while (!wait.isEmpty())
+			{
 				wait.dequeue();
 			}
 		}
 	}
-	void traversal() const {
-		customer * t = head;
-		do {
+
+	void traversal() const
+	{
+		customer *t = head;
+		do
+		{
 			t->print();
 			t = t->prev;
 		} while (t != head);
 	}
+
 	void RED(string name, int energy)
 	{
 		if (q.size > 0)
@@ -312,7 +316,7 @@ public:
 				return;
 			if (q.size == 1)
 			{
-				customer* tmp = head;
+				customer *tmp = head;
 				tmp->next = nullptr;
 				tmp->prev = nullptr;
 				delete tmp;
@@ -324,8 +328,9 @@ public:
 			{
 				while (head != nullptr)
 				{
-					if (q.size == 1) {
-						customer* tmp = head;
+					if (q.size == 1)
+					{
+						customer *tmp = head;
 						head->next = nullptr;
 						head->prev = nullptr;
 						delete tmp;
@@ -333,7 +338,8 @@ public:
 						curr = head;
 						q.dequeue();
 					}
-					else {
+					else
+					{
 						customer *temp = head;
 						head->prev->next = head->next;
 						head->next->prev = head->prev;
@@ -344,19 +350,21 @@ public:
 						q.dequeue();
 					}
 				}
-				while (!q.isEmpty()) {
+				while (!q.isEmpty())
+				{
 					q.dequeue();
-					//q.size--;
 				}
 			}
 		}
 		else
 		{
-			if (head == nullptr) {
-					return;
+			if (head == nullptr)
+			{
+				return;
 			}
-			if (q.size == 1) {
-				customer* tmp = head;
+			if (q.size == 1)
+			{
+				customer *tmp = head;
 				head->prev = nullptr;
 				head->next = nullptr;
 				delete tmp;
@@ -368,10 +376,12 @@ public:
 			while (num > 0)
 			{
 				string nameToRemove = q.frontValue()->name;
-				customer* ptr = head;
-				do {
-					if (q.size == 1) {
-						customer* tmp = head;
+				customer *ptr = head;
+				do
+				{
+					if (q.size == 1)
+					{
+						customer *tmp = head;
 						head->next = nullptr;
 						head->prev = nullptr;
 						tmp->next = nullptr;
@@ -381,22 +391,28 @@ public:
 						curr = head;
 						break;
 					}
-					if (ptr->name == nameToRemove) {
-						customer* toDelete = ptr;
-						if (curr == ptr) {
-							if (curr->energy > 0) curr = ptr->next;
-							else curr = ptr->prev;
+					if (ptr->name == nameToRemove)
+					{
+						customer *toDelete = ptr;
+						if (curr == ptr)
+						{
+							if (curr->energy > 0)
+								curr = ptr->next;
+							else
+								curr = ptr->prev;
 						}
 						ptr->prev->next = ptr->next;
 						ptr->next->prev = ptr->prev;
-						if (ptr == head) head = head->next;
+						if (ptr == head)
+							head = head->next;
 						ptr = ptr->next;
 						toDelete->next = nullptr;
 						toDelete->prev = nullptr;
 						delete toDelete;
 						break;
 					}
-					else ptr = ptr->next;
+					else
+						ptr = ptr->next;
 				} while (ptr != head);
 				num--;
 				q.dequeue();
@@ -509,7 +525,8 @@ public:
 			negative.pop();
 		}
 		ptr = ptr->next;
-		while (ptr != curr) {
+		while (ptr != curr)
+		{
 			if (ptr->energy > 0)
 			{
 				ptr->name = positive.topValue().name;
@@ -579,60 +596,37 @@ public:
 	}
 	void DOMAIN_EXPANSION()
 	{
-		customer *ptr = head;
 		int sumPos = 0;
 		int sumNeg = 0;
-		if (head == nullptr)
+		if (q.size == 0 && wait.size == 0)
 			return;
 		else
 		{
-			if (ptr->energy > 0)
-				sumPos += ptr->energy;
-			else
-				sumNeg += abs(ptr->energy);
+			cusNameEnergy *ptr = q.front;
+			while (ptr != nullptr) {
+				if (ptr->energy > 0) sumPos += ptr->energy;
+				else sumNeg -= ptr->energy;
+				ptr = ptr->next;
+			}
+			cusNameEnergy *ptr1 = wait.front;
+			while (ptr1 != nullptr) {
+				if (ptr->energy > 0) sumPos += ptr->energy;
+				else sumNeg -= ptr->energy;
+				ptr1 = ptr1->next;
+			}
 		}
-		ptr = ptr->next;
 		// Calculate sumPos and sumNeg while iterating through the list
-		do
-		{
-			if (ptr->energy > 0)
-				sumPos += ptr->energy;
-			else
-				sumNeg += abs(ptr->energy);
-			ptr = ptr->next;
-		} while (ptr != head);
-
+		
 		if (sumPos >= sumNeg)
 		{ // đuổi energy < 0
-			/*ptr = head;
-			if (ptr->energy < 0) {
-				customer* tmp = ptr;
-				tmp->prev->next = ptr->next;
-				tmp->next->prev = ptr->prev;
-				ptr = ptr->next;
-				curr = ptr;
-				tmp->prev = nullptr;
-				tmp->next = nullptr;
-				delete tmp;
-			}
-			while (ptr != head) {
-				if (ptr->energy < 0) {
-					customer* tmp = ptr;
-					tmp->prev->next = ptr->next;
-					tmp->next->prev = ptr->prev;
-					if (ptr == head) head = head->next;
-					ptr = ptr->next;
-					tmp->prev = nullptr;
-					tmp->next = nullptr;
-					delete tmp;
-				}
-				else ptr = ptr->next;
-			}*/
-			ptr = head;
-			for (int i = 0; i < q.size; i++) {
-				if (ptr->energy < 0) {
-					customer* tmp = ptr;
-					if (ptr == head) head = head->next;
+			customer* ptr = head;
+			for (int i = 0; i < q.size; i++)
+			{
+				if (ptr->energy < 0)
+				{
+					customer *tmp = ptr;
+					if (ptr == head)
+						head = head->next;
 					tmp->prev->next = ptr->next;
 					tmp->next->prev = ptr->prev;
 					ptr = ptr->next;
@@ -640,45 +634,40 @@ public:
 					tmp->next = nullptr;
 					delete tmp;
 				}
-				else ptr = ptr->next;
+				else
+					ptr = ptr->next;
 			}
-			cusNameEnergy* negPtr = q.front;
-			cusNameEnergy* prevNegPtr = nullptr;
-			while (negPtr != NULL) {
-				cusNameEnergy* tmp = negPtr;
+			cusNameEnergy *negPtr = q.front;
+			while (negPtr != nullptr)
+			{
 				if (negPtr->energy < 0) {
-					if (prevNegPtr) {
-						prevNegPtr->next = negPtr->next;
-					}
-					else {
-						q.front = negPtr->next;
-					}
-					tmp->next = nullptr;
+					cusNameEnergy* tmp = negPtr;
 					negPtr = negPtr->next;
-					prevNegPtr = negPtr;
+					if (tmp->prev != nullptr) {
+						tmp->prev->next = tmp->next;
+					}
+					else q.front = tmp->next;
+					if (tmp->next != nullptr){
+						tmp->next->prev = tmp->prev;
+					}
+					else q.rear = tmp->prev;
+					tmp->next = nullptr;
+					tmp->prev = nullptr;
 					delete tmp;
-					continue;
-				}
-				prevNegPtr = negPtr;
-				negPtr = negPtr->next;
+				}	
+				else negPtr = negPtr->next;
 			}
 		}
 		else
 		{
-			/*ptr = head;
-			if (ptr->energy < 0) {
-				customer* tmp = ptr;
-				tmp->prev->next = ptr->next;
-				tmp->next->prev = ptr->prev;
-				ptr = ptr->next;
-				curr = ptr;
-				tmp->prev = nullptr;
-				tmp->next = nullptr;
-				delete tmp;
-			}
-			while (ptr != head) {
-				if (ptr->energy < 0) {
-					customer* tmp = ptr;
+			customer* ptr = head;
+			for (int i = 0; i < q.size; i++)
+			{
+				if (ptr->energy > 0)
+				{
+					customer *tmp = ptr;
+					if (ptr == head)
+						head = head->next;
 					tmp->prev->next = ptr->next;
 					tmp->next->prev = ptr->prev;
 					ptr = ptr->next;
@@ -686,41 +675,29 @@ public:
 					tmp->next = nullptr;
 					delete tmp;
 				}
-				ptr = ptr->next;
-			}*/
-			ptr = head;
-			for (int i = 0; i < q.size; i++) {
-				if (ptr->energy > 0) {
-					customer* tmp = ptr;
-					if (ptr == head) head = head->next;
-					tmp->prev->next = ptr->next;
-					tmp->next->prev = ptr->prev;
+				else
 					ptr = ptr->next;
-					tmp->prev = nullptr;
-					tmp->next = nullptr;
-					delete tmp;
-				}
-				else ptr = ptr->next;
 			}
-			cusNameEnergy* negPtr = q.front;
-			cusNameEnergy* prevNegPtr = nullptr;
-			while (negPtr != NULL) {
-				cusNameEnergy* tmp = negPtr;
-				if (negPtr->energy < 0) {
-					if (prevNegPtr) {
-						prevNegPtr->next = negPtr->next;
-					}
-					else {
-						q.front = negPtr->next;
-					}
-					tmp->next = nullptr;
+			cusNameEnergy *negPtr = q.front;
+			while (negPtr != nullptr)
+			{
+				if (negPtr->energy > 0) {
+					cusNameEnergy* tmp = negPtr;
 					negPtr = negPtr->next;
-					prevNegPtr = negPtr;
+					if (tmp->prev != nullptr) {
+						tmp->prev->next = tmp->next;
+					}
+					else q.front = tmp->next;
+					if (tmp->next != nullptr){
+						tmp->next->prev = tmp->prev;
+					}
+					else q.rear = tmp->prev;
+					tmp->next = nullptr;
+					tmp->prev = nullptr;
 					delete tmp;
-					continue;
-				}
-				prevNegPtr = negPtr;
-				negPtr = negPtr->next;
+					//in ra thông tin của chú thuật sư hoặc oán linh
+				}	
+				else negPtr = negPtr->next;
 			}
 		}
 	}
@@ -737,8 +714,8 @@ public:
 				ptr = ptr->next;
 			}
 		}
-		else
-		{   
+		else if (num > 0)
+		{
 			curr->print();
 			customer *ptr = curr->prev;
 			while (ptr != curr)
@@ -747,6 +724,17 @@ public:
 				ptr = ptr->prev;
 			}
 		}
-		// THIẾU NUM == 0 -> IN WAIT
+		else {
+			cusNameEnergy* ptr = wait.front;
+			while (ptr != nullptr)
+			{
+				if (ptr != nullptr) {
+					customer* tmp = new customer(ptr->name, ptr->energy, nullptr, nullptr);
+					tmp->print();
+					delete tmp;
+				}	
+			} 
+		}
+		//thiếu num = 0 ->in wait
 	}
 };
