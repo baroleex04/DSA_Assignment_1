@@ -143,6 +143,7 @@ public:
 	customer *curr;
 	Queue q;
 	Queue wait;
+	bool addSuccess = false;
 	imp_res()
 	{
 		curr = head = nullptr;
@@ -183,6 +184,7 @@ public:
 				delete ptr;
 				q.dequeue();
 			}
+			head = curr = nullptr;
 			while (!wait.isEmpty())
 			{
 				wait.dequeue();
@@ -190,18 +192,19 @@ public:
 		}
 	}
 
-	void traversal() const
-	{
-		customer *t = head;
-		do
-		{
-			t->print();
-			t = t->prev;
-		} while (t != head);
-	}
+	// void traversal() const
+	// {
+	// 	customer *t = head;
+	// 	do
+	// 	{
+	// 		t->print();
+	// 		t = t->prev;
+	// 	} while (t != head);
+	// }
 
 	void RED(string name, int energy)
 	{
+		if (addSuccess) addSuccess = false;
 		if (q.size > 0)
 		{
 			if (q.size == 1)
@@ -233,6 +236,7 @@ public:
 		if (energy == 0)
 			return;
 		// check energy = 0
+		addSuccess = true;
 		if (q.size == 0)
 		{
 			q.enqueue(name, energy);
@@ -291,10 +295,9 @@ public:
 			}
 			else
 			{
-				customer *tmp = cusAdd->next;
-				customer *cus = new customer(name, energy, cusAdd, tmp);
+				customer *cus = new customer(name, energy, cusAdd, cusAdd->next);
 				cusAdd->next = cus;
-				tmp->prev = cus;
+				cusAdd->next->prev = cus;
 				curr = cus;
 			}
 			q.enqueue(name, energy);
@@ -309,11 +312,9 @@ public:
 	}
 	void BLUE(int num)
 	{
-		traversal();
+		// traversal();
 		if (num >= MAXSIZE || num >= q.size)
 		{
-			if (head == nullptr)
-				return;
 			if (q.size == 1)
 			{
 				customer *tmp = head;
@@ -344,78 +345,51 @@ public:
 						head->prev->next = head->next;
 						head->next->prev = head->prev;
 						head = head->next;
+						curr = head;
 						temp->prev = nullptr;
 						temp->next = nullptr;
 						delete temp;
 						q.dequeue();
 					}
 				}
-				while (!q.isEmpty())
-				{
-					q.dequeue();
-				}
 			}
 		}
 		else
 		{
-			if (head == nullptr)
+			while (num > 0 && q.size > 0)
 			{
-				return;
-			}
-			if (q.size == 1)
-			{
-				customer *tmp = head;
-				head->prev = nullptr;
-				head->next = nullptr;
-				delete tmp;
-				head = nullptr;
-				curr = head;
-				q.dequeue();
-				return;
-			}
-			while (num > 0)
-			{
-				string nameToRemove = q.frontValue()->name;
-				customer *ptr = head;
-				do
+				if (q.size == 1)
 				{
-					if (q.size == 1)
-					{
-						customer *tmp = head;
-						head->next = nullptr;
-						head->prev = nullptr;
-						tmp->next = nullptr;
-						tmp->prev = nullptr;
-						delete tmp;
-						head = nullptr;
-						curr = head;
-						break;
-					}
-					if (ptr->name == nameToRemove)
-					{
-						customer *toDelete = ptr;
-						if (curr == ptr)
-						{
-							if (curr->energy > 0)
-								curr = ptr->next;
-							else
-								curr = ptr->prev;
-						}
-						ptr->prev->next = ptr->next;
-						ptr->next->prev = ptr->prev;
-						if (ptr == head)
-							head = head->next;
+					customer *tmp = head;
+					head->prev = nullptr;
+					head->next = nullptr;
+					delete tmp;
+					head = nullptr;
+					curr = head;
+					q.dequeue();
+				}
+				else {
+					string toDelName = q.front->name;
+					customer* ptr = head;
+					while (ptr->name != toDelName) {
 						ptr = ptr->next;
-						toDelete->next = nullptr;
-						toDelete->prev = nullptr;
-						delete toDelete;
-						break;
 					}
-					else
-						ptr = ptr->next;
-				} while (ptr != head);
+					if (curr == ptr) {
+						if (ptr->energy > 0) curr = curr->next;
+						else curr = curr->prev;
+					}
+					if (ptr == head) head = head->next;
+					customer* tmp = ptr;
+					ptr = ptr->next;
+					ptr->prev = tmp->prev;
+					tmp->prev->next = ptr;
+					tmp->prev = nullptr;
+					tmp->next = nullptr;
+					delete tmp;
+					curr = ptr;
+					q.dequeue();
+				}
 				num--;
-				q.dequeue();
 			}
 		}
 		// chọn chỗ cho khách
@@ -423,10 +397,11 @@ public:
 			return;
 		else
 		{
-			while (wait.size > 0)
+			while (q.size <= MAXSIZE && wait.size > 0)
 			{
 				cusNameEnergy *newCus = wait.frontValue();
 				RED(newCus->name, newCus->energy);
+				if (addSuccess) q.enqueue(newCus->name, newCus->energy);
 				wait.dequeue();
 			}
 		}
@@ -594,6 +569,51 @@ public:
 			delete cus;
 		}
 	}
+
+	void createTempPosQueueAndPrintNeg() {
+		Queue tempQueue; //negative thì in ra, còn postive thì lưu vô queue
+		cusNameEnergy *ptr = q.front;
+		for (int i = 0; i < q.size; i++) {
+			if (ptr->energy < 0) {
+				customer *tempCus = new customer(ptr->name, ptr->energy, nullptr, nullptr);
+				tempCus->print();
+				delete tempCus;
+			}
+			else {
+				tempQueue.enqueue(ptr->name, ptr->energy);
+			}
+			ptr = ptr->next;
+		}
+		while (!q.isEmpty()) {
+			q.dequeue();
+		}
+		while (!tempQueue.isEmpty()) {
+			q.enqueue(tempQueue.front->name, tempQueue.front->energy);
+			tempQueue.dequeue();
+		}
+	}
+	void createTempNegQueueAndPrintPos() {
+		Queue tempQueue; //positive thì in ra, còn negative thì lưu vô queue
+		cusNameEnergy *ptr = q.front;
+		for (int i = 0; i < q.size; i++) {
+			if (ptr->energy > 0) {
+				customer *tempCus = new customer(ptr->name, ptr->energy, nullptr, nullptr);
+				tempCus->print();
+				delete tempCus;
+			}
+			else {
+				tempQueue.enqueue(ptr->name, ptr->energy);
+			}
+			ptr = ptr->next;
+		}
+		while (!q.isEmpty()) {
+			q.dequeue();
+		}
+		while (!tempQueue.isEmpty()) {
+			q.enqueue(tempQueue.front->name, tempQueue.front->energy);
+			tempQueue.dequeue();
+		}
+	}
 	void DOMAIN_EXPANSION()
 	{
 		int sumPos = 0;
@@ -610,8 +630,8 @@ public:
 			}
 			cusNameEnergy *ptr1 = wait.front;
 			while (ptr1 != nullptr) {
-				if (ptr->energy > 0) sumPos += ptr->energy;
-				else sumNeg -= ptr->energy;
+				if (ptr1->energy > 0) sumPos += ptr1->energy;
+				else sumNeg -= ptr1->energy;
 				ptr1 = ptr1->next;
 			}
 		}
@@ -619,50 +639,39 @@ public:
 		
 		if (sumPos >= sumNeg)
 		{ // đuổi energy < 0
-			// customer* ptr = head;
-			// for (int i = 0; i < q.size; i++)
-			// {
-			// 	if (ptr->energy < 0)
-			// 	{
-			// 		customer *tmp = ptr;
-			// 		if (ptr == head)
-			// 			head = head->next;
-			// 		tmp->prev->next = ptr->next;
-			// 		tmp->next->prev = ptr->prev;
-			// 		ptr = ptr->next;
-			// 		tmp->prev = nullptr;
-			// 		tmp->next = nullptr;
-			// 		delete tmp;
-			// 	}
-			// 	else
-			// 		ptr = ptr->next;
-			// }
-			// cusNameEnergy *negPtr = q.front;
-			// while (negPtr != nullptr)
-			// {
-			// 	if (negPtr->energy < 0) {
-			// 		cusNameEnergy* tmp = negPtr;
-			// 		negPtr = negPtr->next;
-			// 		if (tmp->prev != nullptr) {
-			// 			tmp->prev->next = tmp->next;
-			// 		}
-			// 		else q.front = tmp->next;
-			// 		if (tmp->next != nullptr){
-			// 			tmp->next->prev = tmp->prev;
-			// 		}
-			// 		else q.rear = tmp->prev;
-			// 		tmp->next = nullptr;
-			// 		tmp->prev = nullptr;
-			// 		delete tmp;
-			// 	}	
-			// 	else negPtr = negPtr->next;
-			// }
+			customer* ptr = head;
+			do {
+				if (ptr->energy < 0)
+				{
+					if (q.size == 1) {
+						customer* tmp = head;
+						tmp->next = nullptr;
+						tmp->prev = nullptr;
+						delete tmp;
+						head = nullptr;
+						curr = head;
+						break;
+					}
+					customer *tmp = ptr;
+					if (ptr == head)
+						head = head->next;
+					tmp->prev->next = ptr->next;
+					tmp->next->prev = ptr->prev;
+					ptr = ptr->next;
+					tmp->prev = nullptr;
+					tmp->next = nullptr;
+					delete tmp;
+					curr = ptr;
+				}
+				else
+					ptr = ptr->next;
+			} while (ptr != head);
+			createTempPosQueueAndPrintNeg();
 		}
 		else
 		{
 			customer* ptr = head;
-			for (int i = 0; i < q.size; i++)
-			{
+			do {
 				if (ptr->energy > 0)
 				{
 					if (q.size == 1) {
@@ -687,30 +696,8 @@ public:
 				}
 				else
 					ptr = ptr->next;
-			}
-			cusNameEnergy *negPtr = q.front;
-			while (negPtr != nullptr)
-			{
-				if (negPtr->energy > 0) {
-					cusNameEnergy* tmp = negPtr;
-					negPtr = negPtr->next;
-					if (tmp->prev != nullptr) {
-						tmp->prev->next = negPtr;
-					}
-					else q.front = negPtr;
-					if (tmp->next != nullptr){
-						tmp->next->prev = tmp->prev;
-					}
-					else q.rear = tmp->prev;
-					tmp->next = nullptr;
-					tmp->prev = nullptr;
-					delete tmp;
-					q.size = q.size - 1;
-					//in ra thông tin của chú thuật sư hoặc oán linh
-					negPtr = negPtr->next;
-				}	
-				else negPtr = negPtr->next;
-			}
+			} while (ptr != head);
+			createTempNegQueueAndPrintPos();
 		}
 	}
 
@@ -718,34 +705,47 @@ public:
 	{
 		if (num < 0)
 		{
-			curr->print();
-			customer *ptr = curr->next;
-			while (ptr != curr)
-			{
-				ptr->print();
-				ptr = ptr->next;
+			if (curr == nullptr) return;
+			else {
+				if (q.size == 1) {
+					curr->print();
+					return;
+				}
+				else {
+					customer* ptr = curr;
+					do {
+						ptr->print();
+						ptr = ptr->next;
+					} while (ptr != curr);
+				}
 			}
 		}
 		else if (num > 0)
 		{
-			curr->print();
-			customer *ptr = curr->prev;
-			while (ptr != curr)
-			{
-				ptr->print();
-				ptr = ptr->prev;
+			if (curr == nullptr) return;
+			else {
+				if (q.size == 1) {
+					curr->print();
+					return;
+				}
+				else {
+					customer* ptr = curr;
+					do {
+						ptr->print();
+						ptr = ptr->prev;
+					} while (ptr != curr);
+				}
 			}
 		}
 		else {
 			cusNameEnergy* ptr = wait.front;
 			while (ptr != nullptr)
 			{
-				if (ptr != nullptr) {
-					customer* tmp = new customer(ptr->name, ptr->energy, nullptr, nullptr);
-					tmp->print();
-					delete tmp;
-				}	
+				customer* tmp = new customer(ptr->name, ptr->energy, nullptr, nullptr);
+				tmp->print();
+				delete tmp;
 			} 
 		}
+		//thiếu num = 0 ->in wait
 	}
 };
