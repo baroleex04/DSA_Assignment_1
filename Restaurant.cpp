@@ -570,7 +570,7 @@ public:
 		}
 	}
 
-	void createTempPosQueueAndPrintNeg() {
+	void createTempPosQueueAndPrintNeg(Queue &q) {
 		Queue tempQueue; //negative thì in ra, còn postive thì lưu vô queue
 		cusNameEnergy *ptr = q.front;
 		for (int i = 0; i < q.size; i++) {
@@ -592,7 +592,7 @@ public:
 			tempQueue.dequeue();
 		}
 	}
-	void createTempNegQueueAndPrintPos() {
+	void createTempNegQueueAndPrintPos(Queue &q) {
 		Queue tempQueue; //positive thì in ra, còn negative thì lưu vô queue
 		cusNameEnergy *ptr = q.front;
 		for (int i = 0; i < q.size; i++) {
@@ -618,7 +618,7 @@ public:
 	{
 		int sumPos = 0;
 		int sumNeg = 0;
-		if (q.size == 0 && wait.size == 0)
+		if (head == nullptr)
 			return;
 		else
 		{
@@ -636,10 +636,15 @@ public:
 			}
 		}
 		// Calculate sumPos and sumNeg while iterating through the list
-		
+		if (sumPos == sumNeg && sumNeg == 0) return;
 		if (sumPos >= sumNeg)
 		{ // đuổi energy < 0
-			customer* ptr = head;
+			createTempPosQueueAndPrintNeg(q);
+			customer* flag = head;
+			while (flag->energy < 0) {
+				flag = flag->next;
+			}
+			customer* ptr = flag;
 			do {
 				if (ptr->energy < 0)
 				{
@@ -652,24 +657,25 @@ public:
 						curr = head;
 						break;
 					}
-					customer *tmp = ptr;
-					if (ptr == head)
+					customer* tmp = ptr;
+					ptr->prev->next = ptr->next;
+					ptr->next->prev = ptr->prev;
+					if (ptr == head) {
 						head = head->next;
-					tmp->prev->next = ptr->next;
-					tmp->next->prev = ptr->prev;
+					}
 					ptr = ptr->next;
+					curr = ptr;
 					tmp->prev = nullptr;
 					tmp->next = nullptr;
 					delete tmp;
-					curr = ptr;
 				}
 				else
 					ptr = ptr->next;
-			} while (ptr != head);
-			createTempPosQueueAndPrintNeg();
+			} while (ptr != flag);
 		}
 		else
 		{
+			createTempNegQueueAndPrintPos(q);
 			customer* ptr = head;
 			do {
 				if (ptr->energy > 0)
@@ -683,21 +689,21 @@ public:
 						curr = head;
 						break;
 					}
-					customer *tmp = ptr;
-					if (ptr == head)
+					customer* tmp = ptr;
+					ptr->prev->next = ptr->next;
+					ptr->next->prev = ptr->prev;
+					if (ptr == head) {
 						head = head->next;
-					tmp->prev->next = ptr->next;
-					tmp->next->prev = ptr->prev;
+					}
 					ptr = ptr->next;
+					curr = ptr;
 					tmp->prev = nullptr;
 					tmp->next = nullptr;
 					delete tmp;
-					curr = ptr;
 				}
 				else
 					ptr = ptr->next;
 			} while (ptr != head);
-			createTempNegQueueAndPrintPos();
 		}
 	}
 
@@ -746,6 +752,5 @@ public:
 				delete tmp;
 			} 
 		}
-		//thiếu num = 0 ->in wait
 	}
 };
