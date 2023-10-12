@@ -154,41 +154,26 @@ public:
 		{
 			return;
 		}
-		if (q.size == 1)
-		{
-			customer *tmp = head;
-			tmp->next = nullptr;
-			tmp->prev = nullptr;
-			delete tmp;
-			head = curr = nullptr;
-			while (!q.isEmpty())
-			{
-				q.dequeue();
-			}
-			while (!wait.isEmpty())
-			{
-				wait.dequeue();
-			}
+		customer* tail = head->prev;
+		head->prev = nullptr;
+		tail->next = nullptr;
+		curr = head;
+		while (head != nullptr) {
+			customer* ptr = head;
+			head = head->next;
+			curr = head;
+			ptr->next = nullptr;
+			ptr->prev = nullptr;
+			delete ptr;
 		}
-		else
-		{
-			while (!q.isEmpty())
-			{
-				customer *ptr = head;
-				head = head->next;
-				head->prev = ptr->prev;
-				if (ptr->prev != nullptr)
-					ptr->prev->next = head;
-				ptr->prev = nullptr;
-				ptr->next = nullptr;
-				delete ptr;
-				q.dequeue();
-			}
-			head = curr = nullptr;
-			while (!wait.isEmpty())
-			{
-				wait.dequeue();
-			}
+		delete curr;
+		delete head;
+		curr = head = nullptr;
+		while (!q.isEmpty()) {
+			q.dequeue();
+		}
+		while (!wait.isEmpty()) {
+			wait.dequeue();
 		}
 	}
 
@@ -244,7 +229,6 @@ public:
 			return;
 		// check energy = 0
 		
-		addSuccess = true;
 		if (q.size == 0)
 		{
 			
@@ -254,30 +238,27 @@ public:
 			head->prev = head;
 			head->next = head;
 			curr = head;
+			addSuccess = true;
 		}
 		else if (q.size > 0 && q.size < MAXSIZE / 2)
 		{
 			
 			if (energy >= curr->energy)
 			{
-				customer *cus = new customer(name, energy, nullptr, nullptr);
-				cus->next = curr->next;
-				cus->prev = curr;
+				customer *cus = new customer(name, energy, curr, curr->next);
 				curr->next->prev = cus;
 				curr->next = cus;
 				curr = cus;
 			}
 			else
 			{
-				
-				customer *cus = new customer(name, energy, nullptr, nullptr);
-				cus->next = curr;
-				cus->prev = curr->prev;
+				customer *cus = new customer(name, energy, curr->prev, curr);
 				curr->prev->next = cus;
 				curr->prev = cus;
 				curr = cus;
 			}
 			q.enqueue(name, energy);
+			addSuccess = true;
 			// Sau khi thêm thì nhập vào hàng
 		}
 		else if (q.size < MAXSIZE && q.size >= MAXSIZE / 2)
@@ -305,10 +286,9 @@ public:
 			curr = cus;*/
 			if (signedRes < 0)
 			{
-				customer *tmp = cusAdd->prev;
-				customer *cus = new customer(name, energy, tmp, cusAdd);
+				customer *cus = new customer(name, energy, cusAdd->prev, cusAdd);
+				cusAdd->prev->next = cus;
 				cusAdd->prev = cus;
-				tmp->next = cus;
 				curr = cus;
 			}
 			else
@@ -319,6 +299,7 @@ public:
 				curr = cus;
 			}
 			q.enqueue(name, energy);
+			addSuccess = true;
 		}
 		else if (q.size == MAXSIZE)
 		{
@@ -415,9 +396,9 @@ public:
 			return;
 		else
 		{
-			while (q.size <= MAXSIZE && wait.size > 0)
+			while (q.size < MAXSIZE && wait.size > 0)
 			{
-				cusNameEnergy *newCus = wait.frontValue();
+				cusNameEnergy *newCus = wait.front;
 				RED(newCus->name, newCus->energy);
 				if (addSuccess) q.enqueue(newCus->name, newCus->energy);
 				wait.dequeue();
