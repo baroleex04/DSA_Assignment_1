@@ -619,44 +619,44 @@ public:
 		
 		if (sumPos >= sumNeg)
 		{ // đuổi energy < 0
-			customer* ptr = head;
-			for (int i = 0; i < q.size; i++)
-			{
-				if (ptr->energy < 0)
-				{
-					customer *tmp = ptr;
-					if (ptr == head)
-						head = head->next;
-					tmp->prev->next = ptr->next;
-					tmp->next->prev = ptr->prev;
-					ptr = ptr->next;
-					tmp->prev = nullptr;
-					tmp->next = nullptr;
-					delete tmp;
-				}
-				else
-					ptr = ptr->next;
-			}
-			cusNameEnergy *negPtr = q.front;
-			while (negPtr != nullptr)
-			{
-				if (negPtr->energy < 0) {
-					cusNameEnergy* tmp = negPtr;
-					negPtr = negPtr->next;
-					if (tmp->prev != nullptr) {
-						tmp->prev->next = tmp->next;
-					}
-					else q.front = tmp->next;
-					if (tmp->next != nullptr){
-						tmp->next->prev = tmp->prev;
-					}
-					else q.rear = tmp->prev;
-					tmp->next = nullptr;
-					tmp->prev = nullptr;
-					delete tmp;
-				}	
-				else negPtr = negPtr->next;
-			}
+			// customer* ptr = head;
+			// for (int i = 0; i < q.size; i++)
+			// {
+			// 	if (ptr->energy < 0)
+			// 	{
+			// 		customer *tmp = ptr;
+			// 		if (ptr == head)
+			// 			head = head->next;
+			// 		tmp->prev->next = ptr->next;
+			// 		tmp->next->prev = ptr->prev;
+			// 		ptr = ptr->next;
+			// 		tmp->prev = nullptr;
+			// 		tmp->next = nullptr;
+			// 		delete tmp;
+			// 	}
+			// 	else
+			// 		ptr = ptr->next;
+			// }
+			// cusNameEnergy *negPtr = q.front;
+			// while (negPtr != nullptr)
+			// {
+			// 	if (negPtr->energy < 0) {
+			// 		cusNameEnergy* tmp = negPtr;
+			// 		negPtr = negPtr->next;
+			// 		if (tmp->prev != nullptr) {
+			// 			tmp->prev->next = tmp->next;
+			// 		}
+			// 		else q.front = tmp->next;
+			// 		if (tmp->next != nullptr){
+			// 			tmp->next->prev = tmp->prev;
+			// 		}
+			// 		else q.rear = tmp->prev;
+			// 		tmp->next = nullptr;
+			// 		tmp->prev = nullptr;
+			// 		delete tmp;
+			// 	}	
+			// 	else negPtr = negPtr->next;
+			// }
 		}
 		else
 		{
@@ -665,6 +665,15 @@ public:
 			{
 				if (ptr->energy > 0)
 				{
+					if (q.size == 1) {
+						customer* tmp = head;
+						tmp->next = nullptr;
+						tmp->prev = nullptr;
+						delete tmp;
+						head = nullptr;
+						curr = head;
+						break;
+					}
 					customer *tmp = ptr;
 					if (ptr == head)
 						head = head->next;
@@ -674,6 +683,7 @@ public:
 					tmp->prev = nullptr;
 					tmp->next = nullptr;
 					delete tmp;
+					curr = ptr;
 				}
 				else
 					ptr = ptr->next;
@@ -685,9 +695,9 @@ public:
 					cusNameEnergy* tmp = negPtr;
 					negPtr = negPtr->next;
 					if (tmp->prev != nullptr) {
-						tmp->prev->next = tmp->next;
+						tmp->prev->next = negPtr;
 					}
-					else q.front = tmp->next;
+					else q.front = negPtr;
 					if (tmp->next != nullptr){
 						tmp->next->prev = tmp->prev;
 					}
@@ -695,7 +705,9 @@ public:
 					tmp->next = nullptr;
 					tmp->prev = nullptr;
 					delete tmp;
+					q.size = q.size - 1;
 					//in ra thông tin của chú thuật sư hoặc oán linh
+					negPtr = negPtr->next;
 				}	
 				else negPtr = negPtr->next;
 			}
@@ -735,6 +747,5 @@ public:
 				}	
 			} 
 		}
-		//thiếu num = 0 ->in wait
 	}
 };
