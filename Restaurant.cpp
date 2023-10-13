@@ -154,9 +154,9 @@ public:
 		{
 			return;
 		}
-		customer* tail = head->prev;
+		//customer* tail = head->prev;
+		head->prev->next = nullptr;
 		head->prev = nullptr;
-		tail->next = nullptr;
 		curr = head;
 		while (head != nullptr) {
 			customer* ptr = head;
@@ -166,8 +166,8 @@ public:
 			ptr->prev = nullptr;
 			delete ptr;
 		}
-		delete curr;
-		delete head;
+		//delete curr;
+		//delete head;
 		curr = head = nullptr;
 		while (!q.isEmpty()) {
 			q.dequeue();
@@ -175,6 +175,7 @@ public:
 		while (!wait.isEmpty()) {
 			wait.dequeue();
 		}
+		
 	}
 
 	// void traversal() const
@@ -229,6 +230,7 @@ public:
 		
 		if (q.size == 0)
 		{
+			
 			q.enqueue(name, energy);
 			customer *temp = new customer(name, energy, nullptr, nullptr);
 			head = temp;
@@ -268,7 +270,6 @@ public:
 			
 			do
 			{
-				//cout << "lil" << endl;
 				if (abs(ptr->energy - energy) > res)
 				{
 					
@@ -278,9 +279,6 @@ public:
 				}
 				ptr = ptr->next;
 			} while (ptr != head);
-			/*customer * cus = new customer (name,energy, cusAdd, cusAdd->next);
-			cusAdd->next = cusAdd->next->prev = cus;
-			curr = cus;*/
 			if (signedRes < 0)
 			{
 				customer *cus = new customer(name, energy, cusAdd->prev, cusAdd);
@@ -309,24 +307,23 @@ public:
 	void BLUE(int num)
 	{
 		// traversal();
-		if (num <= 0) return;
 		if (num >= MAXSIZE || num >= q.size)
 		{
-			if (q.size == 1)
-			{
-				customer *tmp = head;
-				tmp->next = nullptr;
-				tmp->prev = nullptr;
-				delete tmp;
-				head = nullptr;
-				curr = head;
-				q.dequeue();
-			}
-			else
-			{
+			// if (q.size == 1)
+			// {
+			// 	//customer *tmp = head;
+			// 	head->next = nullptr;
+			// 	head->prev = nullptr;
+			// 	delete head;
+			// 	head = nullptr;
+			// 	curr = head;
+			// 	q.dequeue();
+			// }
+			// else
+			// {
 				while (head != nullptr)
 				{
-					if (q.size == 1)
+					/*if (q.size == 1)
 					{
 						customer *tmp = head;
 						head->next = nullptr;
@@ -337,7 +334,7 @@ public:
 						q.dequeue();
 					}
 					else
-					{
+					{*/
 						customer *temp = head;
 						head->prev->next = head->next;
 						head->next->prev = head->prev;
@@ -345,27 +342,30 @@ public:
 						curr = head;
 						temp->prev = nullptr;
 						temp->next = nullptr;
+						if (head == temp) {
+							curr = head = nullptr;
+						}
 						delete temp;
 						q.dequeue();
-					}
-				}
+					//}
+				//}
 			}
 		}
 		else
 		{
 			while (num > 0 && q.size > 0)
 			{
-				if (q.size == 1)
-				{
-					customer *tmp = head;
-					head->prev = nullptr;
-					head->next = nullptr;
-					delete tmp;
-					head = nullptr;
-					curr = head;
-					q.dequeue();
-				}
-				else {
+				// if (q.size == 1)
+				// {
+				// 	customer *tmp = head;
+				// 	head->prev = nullptr;
+				// 	head->next = nullptr;
+				// 	delete tmp;
+				// 	head = nullptr;
+				// 	curr = head;
+				// 	q.dequeue();
+				// }
+				// else {
 					string toDelName = q.front->name;
 					customer* ptr = head;
 					while (ptr->name != toDelName) {
@@ -377,17 +377,18 @@ public:
 					}
 					if (ptr == head) head = head->next;
 					customer* tmp = ptr;
-					ptr->prev->next = ptr->next;
-					ptr->next->prev = ptr->prev;
+					ptr = ptr->next;
+					ptr->prev = tmp->prev;
+					tmp->prev->next = ptr;
 					tmp->prev = nullptr;
 					tmp->next = nullptr;
 					delete tmp;
+					curr = ptr;
 					q.dequeue();
-				}
+				//}
 				num--;
 			}
 		}
-		//cout << q.size << '\n';
 		// chọn chỗ cho khách
 		if (wait.size == 0)
 			return;
@@ -396,26 +397,20 @@ public:
 			while (q.size < MAXSIZE && wait.size > 0)
 			{
 				cusNameEnergy *newCus = wait.front;
-				string newname = newCus->name;
-				int newenergy = newCus->energy;
+				RED(newCus->name, newCus->energy);
+				if (addSuccess) q.enqueue(newCus->name, newCus->energy);
 				wait.dequeue();
-				RED(newname, newenergy);
 			}
 		}
 	}
 	void PURPLE()
 	{
 		cout << "PURPLEEEEEEEEEEEEEEEEEEEEEEE" << endl;
-		cusNameEnergy* start = wait.front;
-		// while (start != nullptr) {
-		// 	cout << start->energy << endl;
-		// 	start = start->next;
-		// }
 		int count = 0;
 		if (wait.size == 0)
 			return;
-		int maxEnergy = 0;
-		cusNameEnergy *ptr = wait.front;
+		int maxEnergy = abs(wait.frontValue()->energy);
+		cusNameEnergy *ptr = wait.frontValue();
 		cusNameEnergy *maxEnergyPtr = nullptr;
 		while (ptr != nullptr)
 		{
@@ -433,32 +428,27 @@ public:
 			size++;
 			ptr = ptr->next;
 		}
-		// for (int gap = size / 2; gap > 0; gap /= 2)
-		// {
-		// 	for (int i = gap; i < size; i++)
-		// 	{
-		// 		cusNameEnergy *temp = maxEnergyPtr;
-		// 		for (int j = 0; j < i - gap; j++)
-		// 		{
-		// 			temp = temp->next;
-		// 		}
-		// 		cusNameEnergy *curr = temp->next;
-		// 		while (temp != nullptr && curr != nullptr && abs(temp->energy) < abs(curr->energy))
-		// 		{
-		// 			swap(temp->energy, curr->energy);
-		// 			swap(temp->name, curr->name);
-		// 			count++;
-		// 			temp = temp->next;
-		// 			curr = curr->next;
-		// 		}
-		
-		// 	}
-		// }
-		while (start != nullptr) {
-			cout << start->energy << endl;
-			start = start->next;
+		for (int gap = size / 2; gap > 0; gap /= 2)
+		{
+			for (int i = gap; i < size; i++)
+			{
+				cusNameEnergy *temp = maxEnergyPtr;
+				for (int j = 0; j < i - gap; j++)
+				{
+					temp = temp->next;
+				}
+				cusNameEnergy *curr = temp->next;
+				while (temp != nullptr && curr != nullptr && abs(temp->energy) < abs(curr->energy))
+				{
+					swap(temp->energy, curr->energy);
+					swap(temp->name, curr->name);
+					count++;
+					temp = temp->next;
+					curr = curr->next;
+				}
+			}
 		}
-		// BLUE(count % MAXSIZE);
+		BLUE(count % MAXSIZE);
 	}
 	void REVERSAL()
 	{
@@ -580,12 +570,12 @@ public:
 
 	void createTempPosQueueAndPrintNeg() {
 		Queue tempQueue; //negative thì in ra, còn postive thì lưu vô queue
-		cusNameEnergy *ptr = q.front;
+		cusNameEnergy *ptr = q.frontValue();
 		for (int i = 0; i < q.size; i++) {
 			if (ptr->energy < 0) {
-				customer *tempCus = new customer(ptr->name, ptr->energy, nullptr, nullptr);
-				tempCus->print();
-				delete tempCus;
+				customer tempCus(ptr->name, ptr->energy, nullptr, nullptr);
+				tempCus.print();
+				//delete tempCus;
 			}
 			else {
 				tempQueue.enqueue(ptr->name, ptr->energy);
@@ -596,7 +586,7 @@ public:
 			q.dequeue();
 		}
 		while (!tempQueue.isEmpty()) {
-			q.enqueue(tempQueue.front->name, tempQueue.front->energy);
+			q.enqueue(tempQueue.frontValue()->name, tempQueue.frontValue()->energy);
 			tempQueue.dequeue();
 		}
 	}
@@ -605,9 +595,9 @@ public:
 		cusNameEnergy *ptr = q.front;
 		for (int i = 0; i < q.size; i++) {
 			if (ptr->energy > 0) {
-				customer *tempCus = new customer(ptr->name, ptr->energy, nullptr, nullptr);
-				tempCus->print();
-				delete tempCus;
+				customer tempCus(ptr->name, ptr->energy, nullptr, nullptr);
+				tempCus.print();
+				//delete tempCus;
 			}
 			else {
 				tempQueue.enqueue(ptr->name, ptr->energy);
@@ -653,10 +643,10 @@ public:
 				if (ptr->energy < 0)
 				{
 					if (q.size == 1) {
-						customer* tmp = head;
-						tmp->next = nullptr;
-						tmp->prev = nullptr;
-						delete tmp;
+						//customer* tmp = head;
+						head->next = nullptr;
+						head->prev = nullptr;
+						delete head;
 						head = nullptr;
 						curr = head;
 						break;
@@ -684,12 +674,12 @@ public:
 				if (ptr->energy > 0)
 				{
 					if (q.size == 1) {
-						customer* tmp = head;
-						tmp->next = nullptr;
-						tmp->prev = nullptr;
-						delete tmp;
+						//customer* tmp = head;
+						head->next = nullptr;
+						head->prev = nullptr;
+						delete head;
 						head = nullptr;
-						curr = head;
+						curr=head;
 						break;
 					}
 					customer *tmp = ptr;
