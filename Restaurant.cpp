@@ -229,7 +229,6 @@ public:
 		
 		if (q.size == 0)
 		{
-			
 			q.enqueue(name, energy);
 			customer *temp = new customer(name, energy, nullptr, nullptr);
 			head = temp;
@@ -310,6 +309,7 @@ public:
 	void BLUE(int num)
 	{
 		// traversal();
+		if (num <= 0) return;
 		if (num >= MAXSIZE || num >= q.size)
 		{
 			if (q.size == 1)
@@ -377,18 +377,17 @@ public:
 					}
 					if (ptr == head) head = head->next;
 					customer* tmp = ptr;
-					ptr = ptr->next;
-					ptr->prev = tmp->prev;
-					tmp->prev->next = ptr;
+					ptr->prev->next = ptr->next;
+					ptr->next->prev = ptr->prev;
 					tmp->prev = nullptr;
 					tmp->next = nullptr;
 					delete tmp;
-					curr = ptr;
 					q.dequeue();
 				}
 				num--;
 			}
 		}
+		//cout << q.size << '\n';
 		// chọn chỗ cho khách
 		if (wait.size == 0)
 			return;
@@ -397,20 +396,26 @@ public:
 			while (q.size < MAXSIZE && wait.size > 0)
 			{
 				cusNameEnergy *newCus = wait.front;
-				RED(newCus->name, newCus->energy);
-				if (addSuccess) q.enqueue(newCus->name, newCus->energy);
+				string newname = newCus->name;
+				int newenergy = newCus->energy;
 				wait.dequeue();
+				RED(newname, newenergy);
 			}
 		}
 	}
 	void PURPLE()
 	{
 		cout << "PURPLEEEEEEEEEEEEEEEEEEEEEEE" << endl;
+		cusNameEnergy* start = wait.front;
+		// while (start != nullptr) {
+		// 	cout << start->energy << endl;
+		// 	start = start->next;
+		// }
 		int count = 0;
 		if (wait.size == 0)
 			return;
-		int maxEnergy = abs(wait.frontValue()->energy);
-		cusNameEnergy *ptr = wait.frontValue();
+		int maxEnergy = 0;
+		cusNameEnergy *ptr = wait.front;
 		cusNameEnergy *maxEnergyPtr = nullptr;
 		while (ptr != nullptr)
 		{
@@ -428,27 +433,32 @@ public:
 			size++;
 			ptr = ptr->next;
 		}
-		for (int gap = size / 2; gap > 0; gap /= 2)
-		{
-			for (int i = gap; i < size; i++)
-			{
-				cusNameEnergy *temp = maxEnergyPtr;
-				for (int j = 0; j < i - gap; j++)
-				{
-					temp = temp->next;
-				}
-				cusNameEnergy *curr = temp->next;
-				while (temp != nullptr && curr != nullptr && abs(temp->energy) < abs(curr->energy))
-				{
-					swap(temp->energy, curr->energy);
-					swap(temp->name, curr->name);
-					count++;
-					temp = temp->next;
-					curr = curr->next;
-				}
-			}
+		// for (int gap = size / 2; gap > 0; gap /= 2)
+		// {
+		// 	for (int i = gap; i < size; i++)
+		// 	{
+		// 		cusNameEnergy *temp = maxEnergyPtr;
+		// 		for (int j = 0; j < i - gap; j++)
+		// 		{
+		// 			temp = temp->next;
+		// 		}
+		// 		cusNameEnergy *curr = temp->next;
+		// 		while (temp != nullptr && curr != nullptr && abs(temp->energy) < abs(curr->energy))
+		// 		{
+		// 			swap(temp->energy, curr->energy);
+		// 			swap(temp->name, curr->name);
+		// 			count++;
+		// 			temp = temp->next;
+		// 			curr = curr->next;
+		// 		}
+		
+		// 	}
+		// }
+		while (start != nullptr) {
+			cout << start->energy << endl;
+			start = start->next;
 		}
-		BLUE(count % MAXSIZE);
+		// BLUE(count % MAXSIZE);
 	}
 	void REVERSAL()
 	{
