@@ -204,9 +204,7 @@ public:
 				cusNameEnergy *ptr = q.front;
 				while (ptr != NULL)
 				{
-					
 					if (ptr->name == name){
-						
 						return;}
 					ptr = ptr->next;
 				}
@@ -716,7 +714,7 @@ public:
 					customer* ptr = curr;
 					do {
 						ptr->print();
-						ptr = ptr->next;
+						ptr = ptr->prev;
 					} while (ptr != curr);
 				}
 			}
@@ -733,7 +731,7 @@ public:
 					customer* ptr = curr;
 					do {
 						ptr->print();
-						ptr = ptr->prev;
+						ptr = ptr->next;
 					} while (ptr != curr);
 				}
 			}
