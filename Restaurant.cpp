@@ -6,6 +6,20 @@ extern int MAXSIZE;
 class imp_res : public Restaurant
 {
 public:
+	class cusName
+	{
+	public:
+		string name;
+		cusName *next;
+		cusName *prev;
+		cusName() : name(""), next(nullptr), prev(nullptr) {}
+		cusName(string cusName)
+		{
+			name = cusName;
+			next = nullptr;
+			prev = nullptr;
+		}
+	};
 	class cusNameEnergy
 	{
 	public:
@@ -72,7 +86,88 @@ public:
 			return top == nullptr;
 		}
 	};
+	class TimeQueue
+	{
+	public:
+		cusName *front;
+		cusName *rear;
+		int size;
+		TimeQueue()
+		{
+			front = rear = nullptr;
+			size = 0;
+		}
 
+		~TimeQueue()
+		{
+			while (!isEmpty())
+			{
+				dequeue();
+			}
+			size = 0;
+		}
+
+		void enqueue(string name)
+		{
+			cusName *newNode = new cusName(name);
+			if (isEmpty())
+				front = rear = newNode;
+			else
+			{
+				rear->next = newNode;
+				newNode->prev = rear;
+				rear = newNode;
+			}
+			size++;
+		}
+
+		void dequeue()
+		{
+			if (!isEmpty())
+			{
+				cusName *temp = front;
+				front = front->next;
+				if (front != nullptr)
+					front->prev = nullptr;
+				temp->next = nullptr;
+				temp->prev = nullptr;
+				delete temp;
+				if (front == nullptr)
+					rear = nullptr;
+				size--;
+			}
+			else
+				return;
+		}
+
+		cusName *frontValue()
+		{
+			if (!isEmpty())
+				return front;
+			return nullptr;
+		}
+
+		bool isEmpty()
+		{
+			return size == 0;
+		}
+
+		void remove(string name) {
+			TimeQueue temp;
+			while (!this->isEmpty()) {
+				if (this->front->name == name)
+					this->dequeue();
+				else {
+					temp.enqueue(this->front->name);
+					this->dequeue();
+				}
+			}
+			while (!temp.isEmpty()) {
+				this->enqueue(temp.front->name);
+				temp.dequeue();
+			}
+		}
+	};
 	class Queue
 	{
 	public:
@@ -143,6 +238,7 @@ public:
 	customer *curr;
 	Queue q;
 	Queue wait;
+	TimeQueue t;
 	bool addSuccess = false;
 	imp_res()
 	{
@@ -178,17 +274,11 @@ public:
 		{
 			wait.dequeue();
 		}
+		while (!t.isEmpty())
+		{
+			t.dequeue();
+		}
 	}
-
-	// void traversal() const
-	// {
-	// 	customer *t = head;
-	// 	do
-	// 	{
-	// 		t->print();
-	// 		t = t->prev;
-	// 	} while (t != head);
-	// }
 
 	void RED(string name, int energy)
 	{
@@ -222,6 +312,7 @@ public:
 		//bắt đầu thêm người
 		if (q.size == 0) {
 			q.enqueue(name, energy);
+			t.enqueue(name);
 			customer *temp = new customer(name, energy, nullptr, nullptr);
 			head = temp;
 			head->prev = head;
@@ -248,6 +339,7 @@ public:
 				curr = cus;
 			}
 			q.enqueue(name, energy);
+			t.enqueue(name);
 			addSuccess = true;
 			// Sau khi thêm thì nhập vào hàng
 		}
@@ -282,6 +374,7 @@ public:
 				curr = cus;
 			}
 			q.enqueue(name, energy);
+			t.enqueue(name);
 			addSuccess = true;
 		}
 		else if (q.size == MAXSIZE)
@@ -290,6 +383,7 @@ public:
 				return;
 			else
 				wait.enqueue(name, energy);
+				t.enqueue(name);
 		}
 	}
 	void BLUE(int num)
@@ -311,6 +405,7 @@ public:
 					curr = head = nullptr;
 				}
 				delete temp;
+				t.remove(q.front->name);
 				q.dequeue();
 			}
 		}
@@ -335,6 +430,7 @@ public:
 				tmp->next = nullptr;
 				delete tmp;
 				// curr = ptr;
+				t.remove(t.front->name);
 				q.dequeue();
 				num--;
 			}
@@ -349,15 +445,26 @@ public:
 				cusNameEnergy *newCus = wait.front;
 				string newname = newCus->name;
 				int newenergy = newCus->energy;
+				t.remove(newname);
 				wait.dequeue();
 				RED(newname, newenergy);
 			}
 		}
 	}
+	bool comeEarlier(string n1, string n2) {
+		cusName* ptr = t.front;
+		while (ptr->name != n1) {
+			if (ptr->name == n2) {
+				return false;
+			}
+			ptr = ptr->next;
+		}
+		return true;
+	}
 
 	void PURPLE()
 	{
-		// cout << "PURPLEEEEEEEEEEEEEEEEEEEEEEE" << endl;
+		cout << "PURPLEEEE";
 		if (wait.size == 0)
 			return;
 		int count = 0;
@@ -433,7 +540,8 @@ public:
 			}
 			gap = gap / 2;
 		}
-		BLUE(count % MAXSIZE);
+		cout << count << endl;
+		// BLUE(count % MAXSIZE);
 	}
 	void REVERSAL()
 	{
@@ -453,6 +561,7 @@ public:
 			}
 			ptr = ptr->prev;
 		} while (ptr != curr);
+		customer* tempPtr = nullptr;
 		ptr = curr;
 		do {
 			if (ptr->energy > 0) {
@@ -460,46 +569,26 @@ public:
 				ptr->energy = temp->energy;
 				ptr->name = temp->name;
 				positive.pop();
+				if (positive.isEmpty()) {
+					if (curr->energy > 0) {
+						tempPtr = ptr;
+					}
+				}
 			}
 			else if (ptr->energy < 0) {
 				cusNameEnergy* temp = negative.top;
 				ptr->energy = temp->energy;
 				ptr->name = temp->name;
 				negative.pop();
+				if (negative.isEmpty()) {
+					if (curr->energy < 0) {
+						tempPtr = ptr;
+					}
+				}
 			}
 			ptr = ptr->prev;
 		} while (ptr != curr);
-		// Chơi cái stack âm
-		// ptr = curr;
-		// if (ptr->energy > 0)
-		// {
-		// 	ptr->name = positive.topValue().name;
-		// 	ptr->energy = positive.topValue().energy;
-		// 	positive.pop();
-		// }
-		// else
-		// {
-		// 	ptr->name = negative.topValue().name;
-		// 	ptr->energy = negative.topValue().energy;
-		// 	negative.pop();
-		// }
-		// ptr = ptr->next;
-		// while (ptr != curr)
-		// {
-		// 	if (ptr->energy > 0)
-		// 	{
-		// 		ptr->name = positive.topValue().name;
-		// 		ptr->energy = positive.topValue().energy;
-		// 		positive.pop();
-		// 	}
-		// 	else
-		// 	{
-		// 		ptr->name = negative.topValue().name;
-		// 		ptr->energy = negative.topValue().energy;
-		// 		negative.pop();
-		// 	}
-		// 	ptr = ptr->next;
-		// }
+		curr = tempPtr;
 	}
 
 	void UNLIMITED_VOID()
