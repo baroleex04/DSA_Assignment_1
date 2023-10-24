@@ -194,34 +194,22 @@ public:
 	{
 		if (addSuccess)
 			addSuccess = false;
-		if (q.size > 0)
-		{
-
-			if (q.size == 1)
-			{
-				if (head->name == name)
-					return;
+		if (q.size > 0) {
+			if (q.size == 1) {
+				//trùng tên khi nhà hàng có 1 người
+				if (head->name == name) return;
 			}
-			else
-			{
-
+			else {//xét trùng tên khi nhà hàng có nhiều người
 				cusNameEnergy *ptr = q.front;
-				while (ptr != NULL)
-				{
-					if (ptr->name == name)
-					{
-						return;
-					}
+				while (ptr != NULL) {
+					if (ptr->name == name) return;
 					ptr = ptr->next;
 				}
-
-				if (wait.size > 0)
-				{
+				//xét xong người đang ăn thì xét tới hàng đợi
+				if (wait.size > 0) {
 					ptr = wait.front;
-					while (ptr != NULL)
-					{
-						if (ptr->name == name)
-							return;
+					while (ptr != NULL) {
+						if (ptr->name == name) return;
 						ptr = ptr->next;
 					}
 				}
@@ -231,10 +219,8 @@ public:
 		if (energy == 0)
 			return;
 		// check energy = 0
-
-		if (q.size == 0)
-		{
-
+		//bắt đầu thêm người
+		if (q.size == 0) {
 			q.enqueue(name, energy);
 			customer *temp = new customer(name, energy, nullptr, nullptr);
 			head = temp;
@@ -243,21 +229,22 @@ public:
 			curr = head;
 			addSuccess = true;
 		}
-		else if (q.size > 0 && q.size < MAXSIZE / 2)
-		{
-
-			if (energy >= curr->energy)
-			{
-				customer *cus = new customer(name, energy, curr, curr->next);
+		else if (q.size > 0 && q.size < MAXSIZE / 2) {
+			if (energy >= curr->energy) {
+				customer *cus = new customer(name, energy, nullptr, nullptr);
+				cus->next = curr->next;
 				curr->next->prev = cus;
 				curr->next = cus;
+				cus->prev = curr;
 				curr = cus;
 			}
 			else
 			{
-				customer *cus = new customer(name, energy, curr->prev, curr);
+				customer *cus = new customer(name, energy, nullptr, nullptr);
+				cus->prev = curr->prev;
 				curr->prev->next = cus;
 				curr->prev = cus;
+				cus->next = curr;
 				curr = cus;
 			}
 			q.enqueue(name, energy);
@@ -266,23 +253,20 @@ public:
 		}
 		else if (q.size < MAXSIZE && q.size >= MAXSIZE / 2)
 		{
-
 			int res = 0;
-			int signedRes = res;
-			customer *ptr = head;
+			int signedRes = 0;
+			customer *ptr = curr;
 			customer *cusAdd = nullptr;
-
 			do
 			{
 				if (abs(ptr->energy - energy) > res)
 				{
-
 					cusAdd = ptr;
 					res = abs(ptr->energy - energy);
 					signedRes = energy - ptr->energy;
 				}
 				ptr = ptr->next;
-			} while (ptr != head);
+			} while (ptr != curr);
 			if (signedRes < 0)
 			{
 				customer *cus = new customer(name, energy, cusAdd->prev, cusAdd);
@@ -332,23 +316,17 @@ public:
 		}
 		else
 		{
-			while (num > 0 && q.size > 0)
+			while (num > 0)
 			{
 				string toDelName = q.front->name;
-				customer *ptr = head;
+				customer *ptr = curr;
 				while (ptr->name != toDelName)
 				{
 					ptr = ptr->next;
 				}
-				if (curr == ptr)
-				{
-					if (ptr->energy > 0)
-						curr = curr->next;
-					else
-						curr = curr->prev;
-				}
-				if (ptr == head)
-					head = head->next;
+				if (ptr->energy > 0) curr = ptr->next;
+				else curr = ptr->prev;
+				if (ptr == head) head = head->next;
 				customer *tmp = ptr;
 				ptr = ptr->next;
 				ptr->prev = tmp->prev;
@@ -356,7 +334,7 @@ public:
 				tmp->prev = nullptr;
 				tmp->next = nullptr;
 				delete tmp;
-				curr = ptr;
+				// curr = ptr;
 				q.dequeue();
 				num--;
 			}
@@ -462,65 +440,66 @@ public:
 		customer *ptr = curr;
 		Stack negative;
 		Stack positive;
-		if (curr == nullptr)
+		if (q.size == 0)
 			return;
-		if (ptr->energy < 0)
-		{
-			cusNameEnergy newCus(ptr->name, ptr->energy);
-			negative.push(newCus);
-		}
-		else
-		{
-			cusNameEnergy newCus(ptr->name, ptr->energy);
-			positive.push(newCus);
-		}
-		ptr = ptr->next;
-		// Chia 2 stack dương âm
-		while (ptr != curr)
-		{
-			if (ptr->energy < 0)
-			{
+		do {
+			if (ptr->energy < 0) {
 				cusNameEnergy newCus(ptr->name, ptr->energy);
 				negative.push(newCus);
 			}
-			else
-			{
+			else if (ptr->energy > 0) {
 				cusNameEnergy newCus(ptr->name, ptr->energy);
 				positive.push(newCus);
 			}
-			ptr = ptr->next;
-		}
-		// Chơi cái stack âm
+			ptr = ptr->prev;
+		} while (ptr != curr);
 		ptr = curr;
-		if (ptr->energy > 0)
-		{
-			ptr->name = positive.topValue().name;
-			ptr->energy = positive.topValue().energy;
-			positive.pop();
-		}
-		else
-		{
-			ptr->name = negative.topValue().name;
-			ptr->energy = negative.topValue().energy;
-			negative.pop();
-		}
-		ptr = ptr->next;
-		while (ptr != curr)
-		{
-			if (ptr->energy > 0)
-			{
-				ptr->name = positive.topValue().name;
-				ptr->energy = positive.topValue().energy;
+		do {
+			if (ptr->energy > 0) {
+				cusNameEnergy* temp = positive.top;
+				ptr->energy = temp->energy;
+				ptr->name = temp->name;
 				positive.pop();
 			}
-			else
-			{
-				ptr->name = negative.topValue().name;
-				ptr->energy = negative.topValue().energy;
+			else if (ptr->energy < 0) {
+				cusNameEnergy* temp = negative.top;
+				ptr->energy = temp->energy;
+				ptr->name = temp->name;
 				negative.pop();
 			}
-			ptr = ptr->next;
-		}
+			ptr = ptr->prev;
+		} while (ptr != curr);
+		// Chơi cái stack âm
+		// ptr = curr;
+		// if (ptr->energy > 0)
+		// {
+		// 	ptr->name = positive.topValue().name;
+		// 	ptr->energy = positive.topValue().energy;
+		// 	positive.pop();
+		// }
+		// else
+		// {
+		// 	ptr->name = negative.topValue().name;
+		// 	ptr->energy = negative.topValue().energy;
+		// 	negative.pop();
+		// }
+		// ptr = ptr->next;
+		// while (ptr != curr)
+		// {
+		// 	if (ptr->energy > 0)
+		// 	{
+		// 		ptr->name = positive.topValue().name;
+		// 		ptr->energy = positive.topValue().energy;
+		// 		positive.pop();
+		// 	}
+		// 	else
+		// 	{
+		// 		ptr->name = negative.topValue().name;
+		// 		ptr->energy = negative.topValue().energy;
+		// 		negative.pop();
+		// 	}
+		// 	ptr = ptr->next;
+		// }
 	}
 
 	void UNLIMITED_VOID()
@@ -726,6 +705,7 @@ public:
 
 	void LIGHT(int num)
 	{
+		cout << "LIGHT " << num << endl;
 		if (num < 0)
 		{
 			if (curr == nullptr)
@@ -775,9 +755,9 @@ public:
 			cusNameEnergy *ptr = wait.front;
 			while (ptr != nullptr)
 			{
-				customer *tmp = new customer(ptr->name, ptr->energy, nullptr, nullptr);
-				tmp->print();
-				delete tmp;
+				customer tmp(ptr->name, ptr->energy, nullptr, nullptr);
+				tmp.print();
+				ptr = ptr->next;
 			}
 		}
 	}
